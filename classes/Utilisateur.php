@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-class Users{
+class Utilisateur{
 
     protected int $id;
     protected string $nom;
