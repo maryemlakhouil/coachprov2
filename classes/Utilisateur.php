@@ -66,6 +66,7 @@ class Utilisateur{
     }
 
     // Function Register
+    
     public function register(string $nom,string $prenom,string $email,string $password,string $role){
         // Vérifier email déjà existant
         $check = $this->pdo->prepare("SELECT id From users where email=? ");
