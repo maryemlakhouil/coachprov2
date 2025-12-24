@@ -81,6 +81,23 @@ class Coach extends Utilisateur{
         
         return $stmt->execute([$coachId,$date,$heureDebut,$heureFin]);
     }
+
+    // 4- Lister Les disponibilites 
+
+    public function AfficherDisponibilite(int $coachId){
+
+        $sql = "
+            select * from disponibilites 
+            where coach_id = ? order by date, heure_debut
+        ";
+        $stmt = $this->pdo->prepere($sql);
+        $stmt->execute([$coachId]);
+
+        return $stmt->fetchAll();
+    }
+
+    // 5 - Reservations 
     
+
 }
 ?>
