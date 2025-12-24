@@ -127,6 +127,5 @@ class Coach extends Utilisateur{
 
         return $stmt->execute([$status,$reservationId,$coachId]);
     }
-
 }
 ?>
