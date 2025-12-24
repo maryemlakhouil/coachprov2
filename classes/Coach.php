@@ -115,6 +115,7 @@ class Coach extends Utilisateur{
     }
 
     // 6 - Accepter / Refuser 
+
     public function AcceRefuseReservation(int $reservationId,int $coachId,string $status){
         $sql = "
             UPDATE reservations
@@ -126,7 +127,6 @@ class Coach extends Utilisateur{
 
         return $stmt->execute([$status,$reservationId,$coachId]);
     }
-
 
 }
 ?>
