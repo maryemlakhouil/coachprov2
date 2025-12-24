@@ -97,7 +97,36 @@ class Coach extends Utilisateur{
     }
 
     // 5 - Reservations 
-    
+
+    public function AfficherReservations(int $coachId, string $status){
+
+        $sql = "
+            SELECT r.*, u.nom, u.prenom, d.date, d.heure_debut, d.heure_fin
+            FROM reservations r
+            JOIN users u ON r.sportif_id = u.id
+            JOIN disponibilites d ON r.availability_id = d.id
+            WHERE r.coach_id = ? AND r.status = ?
+            ORDER BY d.date
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$coachId, $status]);
+
+        return $stmt->fetchAll();
+    }
+
+    // 6 - Accepter / Refuser 
+    public function AcceRefuseReservation(int $reservationId,int $coachId,string $status){
+        $sql = "
+            UPDATE reservations
+            SET status = ?
+            WHERE id = ? AND coach_id = ?
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([$status,$reservationId,$coachId]);
+    }
+
 
 }
 ?>
