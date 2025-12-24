@@ -68,7 +68,19 @@ class Coach extends Utilisateur{
         }
     }
 
-    // 3- 
-   
+    // 3- Ajouter disponibilite de coach
+    
+    public function AjoutDisponibilite(int $coachId,string $date,string $heureDebut,string $heureFin) {
+
+        $sql = "
+            insert into disponibilites (coach_id, date, heure_debut,heure_fin,statut)
+             values(? ,? ,? ,? ,'libre')
+        ";
+    
+        $stmt = $this->pdo-->prepare($sql);
+        
+        return $stmt->execute([$coachId,$date,$heureDebut,$heureFin]);
+    }
+    
 }
 ?>
