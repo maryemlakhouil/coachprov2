@@ -130,3 +130,48 @@ INSERT INTO reservations (seance_id, sportif_id, reserved_at) VALUES
 (8, 7, '2025-02-28 23:45'),
 (10, 10, '2025-01-19 23:00'),
 (11, 11, '2025-01-21 23:30');
+
+/*============================================
+    Les requettes sql *
+=============================================*/
+
+/* chalenge 1*/
+
+-- Afficher pour chaque coach nombre total de séances créées
+select coach_id,count(id) as total_seances
+from seances 
+GROUP BY coach_id;
+
+-- Afficher pour chaque coach nombre de séances réservées
+
+    select s.coach_id,count(s.id) as total_seances_Reservee
+    from seances s 
+    join reservations r on  s.id=seance_id
+    group by s.coach_id;
+
+-- afficher pour chaque coach taux de réservation (%)
+
+SELECT u.nom, u.prenom, (COUNT(s.id) / count(s.id) * 100) AS taux
+    FROM seances s
+    JOIN coachs c ON s.coach_id = c.user_id
+    JOIN users u ON c.user_id = u.id
+    GROUP BY u.nom, u.prenom;
+
+-- afficher seulement les coachs ayant ≥3 séances
+
+ select  u.nom, u.prenom,count(s.id) as total_seances_Reservee
+    from seances s 
+    join reservations r on  s.id=seance_id
+    group by s.coach_id
+    having total_seances_Reservee>=3;
+    SELECT 
+    u.nom, u.prenom,
+    COUNT(s.id) AS total_seances,
+    COUNT(r.id) AS seances_reservees,
+    ROUND(COUNT(r.id)/COUNT(s.id)*100,2) AS taux_reservation
+FROM coachs c
+JOIN users u ON u.id = c.user_id
+JOIN seances s ON s.coach_id = c.user_id
+LEFT JOIN reservations r ON r.seance_id = s.id
+GROUP BY c.user_id
+HAVING COUNT(s.id) >= 3;
