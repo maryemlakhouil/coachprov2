@@ -90,10 +90,10 @@ class Utilisateur{
     }
     // fonction de login  
 
-    public static function login(string $email, string $password){
+    public static function login(PDO $pdo,string $email, string $password){
 
         $sql = "SELECT * FROM users WHERE email = ?";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->execute([$email]);
 
         $user = $stmt->fetch();
@@ -107,6 +107,7 @@ class Utilisateur{
         }
         return $user;
     }
+
 }
 
 ?>

@@ -135,5 +135,60 @@ class Coach extends Utilisateur{
 
         return $stmt->execute([$status,$reservationId,$coachId]);
     }
+    // 7 - Statistiques de coach
+
+    public function getDashboardStats(int $coachId): array{
+
+        // 1- Demandes en attente
+
+        $pending = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM reservations 
+            WHERE coach_id = ? AND status = 'en_attente'"
+        );
+        $pending->execute([$coachId]);
+
+        // 2 - Séances aujourd’hui
+
+        $today = $this->pdo->prepare(
+            " SELECT COUNT(*) FROM reservations r
+            JOIN disponibilites d ON r.availability_id = d.id
+            WHERE r.coach_id = ?
+            AND r.status = 'acceptee'
+            AND d.date = CURDATE()"
+        );
+        $today->execute([$coachId]);
+
+    // 3- Séances demain
+    $tomorrow = $this->pdo->prepare(
+        "SELECT COUNT(*) FROM reservations r
+         JOIN disponibilites d ON r.availability_id = d.id
+         WHERE r.coach_id = ?
+         AND r.status = 'acceptee'
+         AND d.date = CURDATE() + INTERVAL 1 DAY"
+    );
+    $tomorrow->execute([$coachId]);
+
+    // 4- Prochaine séance
+    $next = $this->pdo->prepare(
+        "SELECT u.nom, u.prenom, d.date, d.heure_debut, d.heure_fin
+         FROM reservations r
+         JOIN users u ON r.sportif_id = u.id
+         JOIN disponibilites d ON r.availability_id = d.id
+         WHERE r.coach_id = ?
+         AND r.status = 'acceptee'
+         AND d.date >= CURDATE()
+         ORDER BY d.date, d.heure_debut
+         LIMIT 1"
+    );
+    $next->execute([$coachId]);
+
+    return [
+        'pending' => $pending->fetchColumn(),
+        'today' => $today->fetchColumn(),
+        'tomorrow' => $tomorrow->fetchColumn(),
+        'next' => $next->fetch(PDO::FETCH_ASSOC)
+    ];
+}
+
 }
 ?>
