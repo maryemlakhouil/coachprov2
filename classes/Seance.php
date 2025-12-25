@@ -14,7 +14,7 @@
         }
 
         /**
-         * Les Methodes De Seance
+         * Les Methodes De la classe Seance
         */
         // 1. AJOUTER UNE SÉANCE
 
