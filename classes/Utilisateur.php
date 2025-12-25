@@ -13,12 +13,13 @@ class Utilisateur{
     protected PDO $pdo;
 
     // constructeur
-    public function __construct($id,$nom,$prenom,$email){
+    public function __construct($id,$nom,$prenom,$email,$role){
         $pdo=Database::getConnection();
         $this->id = id;
         $this->email=email;
         $this->prenom=prenom;
         $this->nom=nom;
+        $this->role=role;
     }
    
     // getters

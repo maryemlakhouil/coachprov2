@@ -1,6 +1,7 @@
 <?php
 
-require_once  '/Utilisateur.php';
+require_once __DIR__ . '/Utilisateur.php';
+
 
 class Coach extends Utilisateur{
 
@@ -9,6 +10,13 @@ class Coach extends Utilisateur{
     private string $photo;
     private string $certification;
 
+    public function __construct(int $id,string $nom,string $prenom,string $email,string $biographie,int $experience,string $photo = null) {
+        parent::__construct($id, $nom, $prenom, $email, 'coach');
+
+        $this->biographie = $biographie;
+        $this->experience = $experience;
+        $this->photo = $photo;
+    }
     /** 
      * Les Methodes de coach
     */
