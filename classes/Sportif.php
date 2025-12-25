@@ -132,14 +132,5 @@ class Sportif extends Utilisateur{
 
         return true;
     }
-
-
-
-
-    
-
-
-
-
 }
 ?>
