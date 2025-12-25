@@ -78,6 +78,63 @@ class Sportif extends Utilisateur{
         return true;
     }
 
+    // 4 - Afficher Mes reservations 
+
+    public function getReservations(int $sportifId){
+
+        $sql = "
+            SELECT r.status,d.date, d.heure_debut, d.heure_fin,u.nom, u.prenom
+                FROM reservations r
+                JOIN disponibilites d ON r.availability_id = d.id
+                JOIN users u ON r.coach_id = u.id
+                WHERE r.sportif_id = ?
+                ORDER BY d.date
+        ";
+       
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$sportifId]);
+
+        return $stmt->fetchAll();
+    }
+
+    // 5 - Gerer les Reservation 
+
+    public function AnnulerReservation(int $reservationId,int $sportifId){
+
+        // Récupérer le créneau
+        $sql = "
+            SELECT availability_id
+            FROM reservations
+            WHERE id = ? AND sportif_id = ?
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$reservationId, $sportifId]);
+
+        $reservation = $stmt->fetch();
+        if (!$reservation) {
+            return false;
+        }
+
+        // Supprimer réservation
+
+        $delete = $this->pdo->prepare(
+            "DELETE FROM reservations WHERE id = ?"
+        );
+        $delete->execute([$reservationId]);
+
+        // Libérer créneau ??
+        $update = $this->pdo->prepare(
+            "UPDATE disponibilites
+             SET statut = 'libre'
+             WHERE id = ?"
+        );
+        $update->execute([$reservation['availability_id']]);
+
+        return true;
+    }
+
+
+
 
     
 
