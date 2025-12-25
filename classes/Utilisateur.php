@@ -88,8 +88,9 @@ class Utilisateur{
 
         return $stmt->execute([$nom,$prenom,$email,$hashedPassword,$role]);
     }
-    // fonction de login    
-    public function login(string $email, string $password){
+    // fonction de login  
+
+    public static function login(string $email, string $password){
 
         $sql = "SELECT * FROM users WHERE email = ?";
         $stmt = $this->pdo->prepare($sql);
@@ -107,4 +108,5 @@ class Utilisateur{
         return $user;
     }
 }
+
 ?>
