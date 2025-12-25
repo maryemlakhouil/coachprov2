@@ -19,21 +19,65 @@
         // 1. AJOUTER UNE SÉANCE
 
         public function ajouterSeance(int $coachId,string $date,string $heureDebut,string $heureFin){
-            
+
+            $sql = "
+                INSERT INTO disponibilites
+                (coach_id, date, heure_debut, heure_fin, status)
+                VALUES (?, ?, ?, ?, 'libre')
+            ";
+
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$coachId,$date,$heureDebut,$heureFin]);
+        }
+
+        // 2 - Modifier une seance 
+
+        public function modifierSeance(int $seanceId,int $coachId,string $date,string $heureDebut,string $heureFin){
+
+            $sql = "
+                UPDATE disponibilites
+                SET date = ?, heure_debut = ?, heure_fin = ?
+                WHERE id = ? AND coach_id = ?
+            ";
+            $stmt =$this->pdo->prpare($sql);
+            return $stmt->excute([$date,$heureDebut,$heureFin,$seanceId,$coachId]);
+        }
+
+        // 3 - Supprimer une seance 
+
+        public function supprimerSeance(int $seanceId,int $coachId){
+
+            $sql = "
+                DELETE FROM disponibilites
+                WHERE id = ? AND coach_id = ?
+            ";
+
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$seanceId, $coachId]);
+        }
+
+        // 4- get seance par coach 
+
+    public function getByCoach(int $coachId): array
+    {
         $sql = "
-            INSERT INTO disponibilites
-            (coach_id, date, heure_debut, heure_fin, status)
-            VALUES (?, ?, ?, ?, 'libre')
+            SELECT *
+            FROM disponibilites
+            WHERE coach_id = ?
+            ORDER BY date, heure_debut
         ";
 
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            $coachId,
-            $date,
-            $heureDebut,
-            $heureFin
-        ]);
+        $stmt->execute([$coachId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
+
+      
+
+    
 
     }
 ?>
