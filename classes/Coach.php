@@ -10,8 +10,30 @@ class Coach extends Utilisateur{
     private string $photo;
     private string $certification;
 
-    public function __construct(int $id,string $nom,string $prenom,string $email,string $biographie,int $experience,string $photo = null) {
-        parent::__construct($id, $nom, $prenom, $email, 'coach');
+       public function __construct(int $id){
+        parent::__construct($id);
+        $this->load($this->id);
+       }
+    // overried
+    public  function load(int $id) {
+        if(parent::load($id)){
+            
+            $sql = "SELECT * FROM coach_profiles WHERE user_id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$this->id]);
+
+            $data = $stmt->fetch();
+
+            if($data){
+                $this->biographie=$data["biographie"];
+                $this->experience=$data["experience"];
+                $this->photo=$data["photo"];
+                $this->certification=$data["certification"];
+                return true;
+            }
+            return false;
+
+        };
 
         $this->biographie = $biographie;
         $this->experience = $experience;

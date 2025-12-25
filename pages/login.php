@@ -25,7 +25,7 @@
                 $_SESSION['prenom'] = $user['prenom'];
                 $_SESSION['role']    = $user['role'];
 
-                header('Location:../pages/dashbord.php');
+                header('Location:../pages/dashbord_coach.php');
                 exit;
             } else {
                 $error = "Email ou mot de passe incorrect.";

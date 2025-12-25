@@ -132,6 +132,39 @@ class Sportif extends Utilisateur{
 
         return true;
     }
+    // 6 - les statiqtiques 
+
+    public function getDashboardStats(int $sportifId): array{
+        // Séances réservées
+        $reserved = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM reservations
+            WHERE sportif_id = ? AND status = 'acceptee'"
+        );
+        served->execute([$sportifId]);
+
+        // Demandes en attente
+        $pending = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM reservations
+            WHERE sportif_id = ? AND status = 'en_attente'"
+        );
+        $pending->execute([$sportifId]);
+
+        return [
+            'reserved' => $reserved->fetchColumn(),
+            'pending' => $pending->fetchColumn()
+        ];
+    }
+
+    public function getCoachs(): array{
+        $sql = "
+            SELECT u.id, u.nom, u.prenom, c.photo, c.biographie, c.experience
+            FROM users u
+            JOIN coach_profile c ON u.id = c.user_id
+            WHERE u.role = 'coach'
+        ";
+        return $this->pdo->query($sql)->fetchAll();
+    }
+
     
 }
 ?>

@@ -13,13 +13,35 @@ class Utilisateur{
     protected PDO $pdo;
 
     // constructeur
-    public function __construct($id,$nom,$prenom,$email,$role){
+    public function __construct(?int $id=null){
         $pdo=Database::getConnection();
-        $this->id = id;
-        $this->email=email;
-        $this->prenom=prenom;
-        $this->nom=nom;
-        $this->role=role;
+        if($id!==null){
+            $this->id = $id;
+            $this->load();
+        }
+        
+    }
+    public  function load(int $id){
+
+        $sql = "SELECT * FROM users WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$this->id]);
+
+        $data = $stmt->fetch();
+
+        if($data){
+            $this->nom=$data["nom"];
+            $this->prenom=$data["prenom"];
+            $this->email=$data["email"];
+            $this->password=$data["password"];
+            $this->role=$data["role"];
+
+
+            return true;
+        }
+        return false;
+
+
     }
    
     // getters

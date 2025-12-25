@@ -9,9 +9,11 @@
         private string $heureFin;
         private string $status;
 
-        public function __construct(){
-            $pdo=Database::getConnection();
+      
+        public function __construct(PDO $pdo){
+             $this->pdo = $pdo;
         }
+
         /**
          * Les getters et Les setters 
         */
