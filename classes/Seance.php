@@ -19,8 +19,29 @@
         public function getDate(){
             return $this->date;
         }
+
         public function getHeureDebut(){
             return $this->heureDebut;
+        }
+
+        public function getHeureFin(){
+            return $this->heureFin;
+        }
+
+        public function getId(){
+            return $this->id;
+        }
+
+        public function getCoachid(){
+            return $this->coachId;
+        }
+
+        public function getStatus(){
+            return $this->status;
+        }
+
+        public function setStatus(string $status){
+            $this->status=$status;
         }
        
         /**
