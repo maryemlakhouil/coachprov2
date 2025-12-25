@@ -58,18 +58,34 @@
 
         // 4- get seance par coach 
 
-    public function getByCoach(int $coachId): array
+        public function getSeanceParCoach(int $coachId){
+            
+            $sql = "
+                SELECT *
+                FROM disponibilites
+                WHERE coach_id = ?
+                ORDER BY date, heure_debut
+            ";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$coachId]);
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        // 5 - Tous les Sances Disponibles 
+    public function getDisponibles(): array
     {
         $sql = "
-            SELECT *
-            FROM disponibilites
-            WHERE coach_id = ?
-            ORDER BY date, heure_debut
+            SELECT d.*, u.nom, u.prenom
+            FROM disponibilites d
+            JOIN users u ON d.coach_id = u.id
+            WHERE d.status = 'libre'
+              AND d.date >= CURDATE()
+            ORDER BY d.date, d.heure_debut
         ";
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([$coachId]);
-
+        $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
