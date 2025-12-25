@@ -12,7 +12,17 @@
         public function __construct(){
             $pdo=Database::getConnection();
         }
+        /**
+         * Les getters et Les setters 
+        */
 
+        public function getDate(){
+            return $this->date;
+        }
+        public function getHeureDebut(){
+            return $this->heureDebut;
+        }
+       
         /**
          * Les Methodes De la classe Seance
         */

@@ -1,91 +1,153 @@
 
+<?php
+session_start();
+
+require_once '../config/database.php';
+require_once '../classes/Coach.php';
+require_once '../classes/Sportif.php';
+require_once '../classes/Reservation.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$pdo = Database::getConnection();
+
+$userId = $_SESSION['user_id'];
+$role   = $_SESSION['role'];
+$nom    = $_SESSION['nom'];
+$prenom = $_SESSION['prenom'];
+
+$reservation = new Reservation($pdo);
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Sportif</title>
+<title>Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex">
 
-<aside class="w-64 bg-[#C060A1] text-white flex flex-col p-6">
+<body class="bg-gray-100 min-h-screen">
 
-    <div class="p-6 text-xl font-bold">
-        CoachPro
-    </div>
+<div class="max-w-6xl mx-auto py-10 px-6">
 
-    <nav class="mt-6 flex flex-col gap-2 px-4">
-
-        <a href="#" class="px-4 py-2 hover:bg-[#C30E59] rounded">
-             Dashboard
-        </a>
-
-      
-
-        <a href="reservations.php" class="px-4 py-2 hover:bg-[#C30E59] rounded">
-             Mes réservations
-        </a>
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-purple-600">
+                Bonjour <?= htmlspecialchars($prenom) ?> 👋
+            </h1>
+            <p class="text-gray-600">
+                Tableau de bord <?= $role ?>
+            </p>
+        </div>
 
         <a href="../auth/logout.php"
-           class="mt-6 bg-[#DE1A58] py-2 text-center rounded">
-            Déconnexion
+           class="bg-red-500 text-white px-4 py-2 rounded-lg">
+           Déconnexion
         </a>
-
-    </nav>
-</aside>
-
-<main class="flex-1 p-8 space-y-8">
-    <h1 class="text-3xl font-bold mb-8 text-[#640D5F]">
-        Dashboard Sportif
-    </h1>
-
-    <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-white shadow rounded-xl p-6">
-            <p class="text-gray-500">Séances réservées</p>
-            <p class="text-4xl font-bold text-green-600"><?= $reserved ?></p>
-        </div>
-
-        <div class="bg-white shadow rounded-xl p-6">
-            <p class="text-gray-500">Demandes en attente</p>
-            <p class="text-4xl font-bold text-yellow-600"><?= $pending ?></p>
-        </div>
-        
     </div>
-    <section class="mt-10">
-    <h2 class="text-2xl font-bold text-[#640D5F] mb-6">
-        Coachs disponibles
-    </h2>
 
-    <div class="grid md:grid-cols-3 gap-6">
-    <?php while ($coach = mysqli_fetch_assoc($result)): ?>
-        <div class="bg-white rounded-xl shadow p-5">
-            
-            <img src="<?= htmlspecialchars ($coach['photo'] ?: '../images/profile.jpg')?>"
-                 class="w-24 h-24 rounded-full mx-auto object-cover mb-4">
+    <!-- CONTENU -->
+    <?php if ($role === 'sportif'): ?>
 
-            <h3 class="text-center font-semibold text-lg">
-                <?= htmlspecialchars($coach['prenom'].' '.$coach['nom']) ?>
-            </h3>
+        <?php
+        $reservations = $reservation->getBySportif($userId);
+        ?>
 
-           <p class="text-center text-gray-500 mb-2">
-                <?= (int)$coach['experience'] ?> ans d'expérience
-            </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <p class="text-gray-600 text-sm mt-3 line-clamp-3">
-                <?= htmlspecialchars($coach['biographie']) ?>
-            </p>
-
-
-            <a href="disponibilites.php?coach_id=<?= $coach['id'] ?>"
-               class="block text-center mt-4 bg-[#640D5F] text-white py-2 rounded-lg hover:opacity-90">
-                Voir disponibilités
+            <!-- Réserver -->
+            <a href="coachs.php"
+               class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-xl font-semibold text-purple-600 mb-2">
+                    Trouver un coach
+                </h2>
+                <p class="text-gray-600">
+                    Consultez les coachs et réservez une séance.
+                </p>
             </a>
-        </div>
-    <?php endwhile; ?>
-    </div>
-</section>
 
-</main>
+            <!-- Mes réservations -->
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-semibold text-purple-600 mb-4">
+                    Mes réservations
+                </h2>
+
+                <?php if (empty($reservations)): ?>
+                    <p class="text-gray-500">
+                        Aucune réservation pour le moment.
+                    </p>
+                <?php else: ?>
+                    <ul class="space-y-3">
+                        <?php foreach ($reservations as $r): ?>
+                            <li class="border-b pb-2">
+                                <strong><?= $r['date'] ?></strong>
+                                <?= $r['heure_debut'] ?> - <?= $r['heure_fin'] ?>
+                                <br>
+                                Coach : <?= $r['prenom'] ?> <?= $r['nom'] ?>
+                                <span class="text-sm text-gray-500">
+                                    (<?= $r['status'] ?>)
+                                </span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </div>
+
+        </div>
+
+    <?php else: /* COACH */ ?>
+
+        <?php
+        $reservations = $reservation->getByCoach($userId, 'en_attente');
+        ?>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Gérer séances -->
+            <a href="seances.php"
+               class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+                <h2 class="text-xl font-semibold text-purple-600 mb-2">
+                    Gérer mes séances
+                </h2>
+                <p class="text-gray-600">
+                    Ajouter, modifier ou supprimer vos disponibilités.
+                </p>
+            </a>
+
+            <!-- Réservations -->
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-semibold text-purple-600 mb-4">
+                    Réservations en attente
+                </h2>
+
+                <?php if (empty($reservations)): ?>
+                    <p class="text-gray-500">
+                        Aucune réservation en attente.
+                    </p>
+                <?php else: ?>
+                    <ul class="space-y-3">
+                        <?php foreach ($reservations as $r): ?>
+                            <li class="border-b pb-2">
+                                <strong><?= $r['date'] ?></strong>
+                                <?= $r['heure_debut'] ?> - <?= $r['heure_fin'] ?>
+                                <br>
+                                Sportif : <?= $r['prenom'] ?> <?= $r['nom'] ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </div>
+
+        </div>
+
+    <?php endif; ?>
+
+</div>
 
 </body>
 </html>
