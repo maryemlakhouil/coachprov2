@@ -73,26 +73,20 @@
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        // 5 - Tous les Sances Disponibles 
+        // 5 - Tous les Sances Disponibles
+
         public function getSeancesDisponibles(){
 
-        $sql = "
-            SELECT d.*, u.nom, u.prenom
-            FROM disponibilites d
-            JOIN users u ON d.coach_id = u.id
-            WHERE d.status = 'libre'    
-              AND d.date >= CURDATE()
-            ORDER BY d.date, d.heure_debut
-        ";
-        $stmt = $this->pdo->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-
-
-      
-
-    
-
+            $sql = "
+                SELECT d.*, u.nom, u.prenom
+                FROM disponibilites d
+                JOIN users u ON d.coach_id = u.id
+                WHERE d.status = 'libre'    
+                AND d.date >= CURDATE()
+                ORDER BY d.date, d.heure_debut
+            ";
+            $stmt = $this->pdo->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } 
     }
 ?>
