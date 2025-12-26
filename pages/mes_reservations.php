@@ -4,9 +4,9 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Reservation.php';
 
-// Sécurité
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'sportif') {
-    header('Location: login.php');
+// Vérifier session
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sportif') {
+    header("Location: login.php");
     exit;
 }
 
@@ -18,24 +18,24 @@ $message = '';
 
 if (isset($_POST['annuler'])) {
     $reservationId = (int) $_POST['reservation_id'];
-    $sportifId = $_SESSION['user']['id'];
+    $sportifId = $_SESSION['user_id'];
 
     if ($reservation->annuler($reservationId, $sportifId)) {
-        $message = "Réservation annulée avec succès ✅";
+        $message = "Réservation annulée avec succès ";
     } else {
-        $message = "Impossible d’annuler cette réservation ❌";
+        $message = "Impossible d'annuler cette réservation ";
     }
 }
 
 // Récupérer réservations
-$reservations = $reservation->getBySportif($_SESSION['user']['id']);
+$reservations = $reservation->getBySportif($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Mes réservations</title>
-    <link rel="stylesheet" href="../assets/style.css">
+ <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
 

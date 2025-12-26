@@ -27,8 +27,10 @@
                 // Redirection selon rôle
                 if ($user['role'] === 'coach') {
                     header('Location: ../pages/dashbord_coach.php');
-                } else {
+                } else if ($user['role'] === 'sportif') {
                     header('Location: ../pages/dashbord_sportif.php');
+                }else {
+                    header('Location: ../public/index.php');
                 }
                 exit;
             }

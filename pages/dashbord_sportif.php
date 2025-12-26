@@ -34,7 +34,7 @@ $coachs = $sportif->getCoachs();
 <aside class="w-64 bg-[#640D5F] text-white p-6">
     <h2 class="text-2xl font-bold mb-8">Sportif</h2>
     <nav class="space-y-4">
-        <a href="../pages/dashboard_sportif.php" class="block hover:text-gray-200">Dashboard</a>
+        <a href="#" class="block hover:text-gray-200">Dashboard</a>
         <a href="../pages/mes_reservations.php" class="block hover:text-gray-200">Mes réservations</a>
         <a href="../pages/logout.php" class="block text-red-300">Déconnexion</a>
     </nav>
@@ -80,7 +80,7 @@ $coachs = $sportif->getCoachs();
                     <?= htmlspecialchars(substr($coach['biographie'], 0, 80)) ?>...
                 </p>
                 <p class="text-center text-sm mt-2">
-                    <?= $coach['experience'] ?> ans d’expérience
+                    <?= $coach['experience'] ?> ans d'expérience
                 </p>
 
                 <a href="disponibilites.php?coach_id=<?= $coach['id'] ?>"

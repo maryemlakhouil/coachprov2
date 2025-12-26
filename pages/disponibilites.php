@@ -6,7 +6,7 @@ require_once __DIR__ . '/../classes/Seance.php';
 require_once __DIR__ . '/../classes/Reservation.php';
 
 // Vérification rôle
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'sportif') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sportif') {
     header('Location: login.php');
     exit;
 }
@@ -22,7 +22,7 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $seanceId = (int) $_POST['seance_id'];
     $coachId  = (int) $_POST['coach_id'];
-    $sportifId = $_SESSION['user']['id'];
+    $sportifId = $_SESSION['user_id'];  
 
     if ($reservation->reserver($sportifId, $coachId, $seanceId)) {
         $message = "Séance réservée avec succès ";
@@ -63,7 +63,7 @@ $seances = $seance->getSeancesDisponibles();
                 </p>
 
                 <p class="text-gray-600">
-                    📅 <?= $s['date'] ?>
+                    <?= $s['date'] ?>
                 </p>
                 <p class="text-gray-600">
                     ⏰ <?= $s['heure_debut'] ?> - <?= $s['heure_fin'] ?>

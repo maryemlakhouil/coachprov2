@@ -1,33 +1,58 @@
 <?php
 session_start();
 
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Coach.php';
 
-// Vérification rôle
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'coach') {
+/* =====================
+   AUTH CHECK
+===================== */
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'coach') {
     header('Location: login.php');
     exit;
 }
 
-$pdo = Database::getConnection();
-$coachId = $_SESSION['user']['id'];
+/* =====================
+   LOAD COACH
+===================== */
+$coachId = (int) $_SESSION['user_id'];
 $coach = new Coach($coachId);
 
-// Traitement du formulaire de mise à jour
 $message = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $biographie = $_POST['biographie'];
-    $experience = (int)$_POST['experience'];
-    $photo = $_POST['photo'] ?? '';  // tu peux adapter pour upload
-    $certification = $_POST['certification'] ?? '';
 
-    if ($coach->Profile($coachId, $biographie, $experience, $photo, $certification)) {
-        $message = "Profil mis à jour avec succès ✅";
-    } else {
-        $message = "Erreur lors de la mise à jour ❌";
+/* =====================
+   HANDLE FORM SUBMIT
+===================== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $biographie    = trim($_POST['biographie']);
+    $experience    = (int) $_POST['experience'];
+   
+    $photoPath = $coach->getPhoto();
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+        $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+        if (in_array(strtolower($ext), ['jpg','jpeg','png'])) {
+            $photoPath = 'uploads/photos/' . uniqid() . '.' . $ext;
+            move_uploaded_file($_FILES['photo']['tmp_name'], __DIR__ . '/../' . $photoPath);
+        }
     }
+
+    // Certification
+    $certPath = $coach->getCertification();
+    if (isset($_FILES['certification']) && $_FILES['certification']['error'] === UPLOAD_ERR_OK) {
+        $ext = pathinfo($_FILES['certification']['name'], PATHINFO_EXTENSION);
+        if (in_array(strtolower($ext), ['jpg','jpeg','png'])) {
+            $certPath = 'uploads/certifications/' . uniqid() . '.' . $ext;
+            move_uploaded_file($_FILES['certification']['tmp_name'], __DIR__ . '/../' . $certPath);
+        }
+    }
+
+    // Mettre à jour le profil
+    $coach->profile($coachId, $biographie, $experience, $photoPath, $certPath);
+
+    header('Location: profile.php');
+    exit;
 }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -35,12 +60,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Mon Profil</title>
-    <link rel="stylesheet" href="../assets/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
 
 <div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-[#640D5F] mb-6">Mon Profil</h1>
+
+    <h1 class="text-3xl font-bold text-[#640D5F] mb-6">
+        Mon Profil
+    </h1>
 
     <?php if ($message): ?>
         <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">
@@ -48,31 +76,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
-    <form method="POST" class="bg-white p-6 rounded-xl shadow space-y-4">
-        <label class="block">
-            Biographie
-            <textarea name="biographie" class="w-full border rounded p-2"><?= htmlspecialchars($coach->getBiographie()) ?></textarea>
-        </label>
+    <form method="POST" enctype="multipart/form-data"class="bg-white p-6 rounded-xl shadow space-y-5">
 
-        <label class="block">
-            Années d'expérience
-            <input type="number" name="experience" value="<?= htmlspecialchars($coach->getExperience()) ?>" class="w-full border rounded p-2">
-        </label>
+        <div>
+            <label class="block font-semibold mb-1">Biographie</label>
+            <textarea name="biographie"
+                      class="w-full border rounded-lg p-3"
+                      rows="4"><?= htmlspecialchars($coach->getBiographie()) ?></textarea>
+        </div>
 
-        <label class="block">
-            Photo (URL)
-            <input type="text" name="photo" value="<?= htmlspecialchars($coach->getPhoto()) ?>" class="w-full border rounded p-2">
-        </label>
+        <div>
+            <label class="block font-semibold mb-1">Années d'expérience</label>
+            <input type="number"
+                   name="experience"
+                   class="w-full border rounded-lg p-2"
+                   value="<?= $coach->getExperience() ?>">
+        </div>
 
-        <label class="block">
-            Certification
-            <input type="text" name="certification" value="<?= htmlspecialchars($coach->getCertification()) ?>" class="w-full border rounded p-2">
-        </label>
+        <div>
+            <label class="block font-semibold mb-1">Photo (URL)</label>
+            <input type="text"
+                   name="photo"
+                   class="w-full border rounded-lg p-2"
+                   value="<?= htmlspecialchars($coach->getPhoto()) ?>">
+        </div>
 
-        <button type="submit" class="bg-[#640D5F] text-white px-4 py-2 rounded hover:opacity-90">
-            Mettre à jour
+        <?php if ($coach->getPhoto()): ?>
+            <img src="<?= htmlspecialchars($coach->getPhoto()) ?>"
+                 class="w-32 h-32 object-cover rounded mt-2">
+        <?php endif; ?>
+
+      
+<div>
+        <label class="block text-gray-600 mb-1">Certification</label>
+        <input type="file" name="certification" accept="image/png, image/jpeg" class="w-full border rounded-lg p-2"
+                   value="<?= htmlspecialchars($coach->getCertification()) ?>">
+    </div>
+        <button
+            class="bg-[#640D5F] text-white px-6 py-2 rounded-lg hover:opacity-90">
+            Enregistrer
         </button>
+
     </form>
+
 </div>
 
 </body>

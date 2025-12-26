@@ -2,17 +2,21 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-class Utilisateur {
+class Utilisateur
+{
+    
 
     protected ?int $id = null;
-    protected string $nom;
-    protected string $prenom;
-    protected string $email;
-    protected string $password;
-    protected string $role;
+    protected string $nom = '';
+    protected string $prenom = '';
+    protected string $email = '';
+    protected string $password = '';
+    protected string $role = '';
     protected PDO $pdo;
 
-    // CONSTRUCTEUR
+   
+       //CONSTRUCTEUR
+
     public function __construct(?int $id = null)
     {
         $this->pdo = Database::getConnection();
@@ -23,9 +27,15 @@ class Utilisateur {
         }
     }
 
-    // Charger utilisateur depuis DB
-     protected  function load(): bool
+   
+       //CHARGER UTILISATEUR
+
+    protected function load(): bool
     {
+        if ($this->id === null) {
+            return false;
+        }
+
         $sql = "SELECT * FROM users WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$this->id]);
@@ -36,39 +46,64 @@ class Utilisateur {
             return false;
         }
 
-        $this->nom = $data['nom'];
-        $this->prenom = $data['prenom'];
-        $this->email = $data['email'];
-        $this->password = $data['password'];
-        $this->role = $data['role'];
+        $this->nom     = $data['nom'];
+        $this->prenom  = $data['prenom'];
+        $this->email   = $data['email'];
+        $this->password= $data['password'];
+        $this->role    = $data['role'];
 
         return true;
     }
 
-    /* =====================
-       GETTERS
-    ===================== */
+    // getters 
 
-    public function getId(): ?int { return $this->id; }
-    public function getNom(): string { return $this->nom; }
-    public function getPrenom(): string { return $this->prenom; }
-    public function getEmail(): string { return $this->email; }
-    public function getRole(): string { return $this->role; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    /* =====================
-       REGISTER
-    ===================== */
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
 
-    public function register(string $nom,string $prenom,string $email,string $password,string $role): bool {
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
 
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+      // INSCRIPTION
+   
+
+    public function register(
+        string $nom,
+        string $prenom,
+        string $email,
+        string $password,
+        string $role
+    ): bool {
+
+        // Rôle autorisé
         if (!in_array($role, ['coach', 'sportif'])) {
             return false;
         }
 
+        // Email valide
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
 
+        // Vérifier email unique
         $check = $this->pdo->prepare(
             "SELECT id FROM users WHERE email = ?"
         );
@@ -78,6 +113,7 @@ class Utilisateur {
             return false;
         }
 
+        // Hash mot de passe
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
         $sql = "
@@ -86,14 +122,19 @@ class Utilisateur {
         ";
 
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$nom,$prenom,$email,$hashedPassword,$role]);
+        return $stmt->execute([
+            $nom,
+            $prenom,
+            $email,
+            $hashedPassword,
+            $role
+        ]);
     }
 
-    /* =====================
-       LOGIN
-    ===================== */
+       //CONNEXION
+   
 
-    public static function login(PDO $pdo, string $email, string $password)
+    public static function login(PDO $pdo, string $email, string $password): array|false
     {
         $stmt = $pdo->prepare(
             "SELECT * FROM users WHERE email = ?"

@@ -55,9 +55,9 @@
 
 
 
-        /* ==========================
-        2. RÉSERVATIONS DU SPORTIF
-        ========================== */
+      
+        //2. RÉSERVATIONS DU SPORTIF
+       
 
         public function getBySportif(int $sportifId): array
         {

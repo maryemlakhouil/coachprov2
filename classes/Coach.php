@@ -2,20 +2,26 @@
 
 require_once __DIR__ . '/Utilisateur.php';
 
+class Coach extends Utilisateur
+{
+    
 
-class Coach extends Utilisateur{
+    private string $biographie = '';
+    private int $experience = 0;
+    private string $photo = '';
+    private string $certification = '';
 
-    private string $biographie;
-    private int $experience;
-    private string $photo;
-    private string $certification;
+    /*  CONSTRUCTEUR */
 
-       public function __construct(int $id){
+    public function __construct(int $id)
+    {
         parent::__construct($id);
-        $this->load($this->id);
-       }
-    // overried
-   protected function load(): bool{
+        $this->load();
+    }
+
+      // CHARGER PROFIL COACH
+
+  protected function load(): bool {
     if (!parent::load()) {
         return false;
     }
@@ -23,111 +29,161 @@ class Coach extends Utilisateur{
     $sql = "SELECT * FROM coach_profile WHERE user_id = ?";
     $stmt = $this->pdo->prepare($sql);
     $stmt->execute([$this->id]);
-
-    $data = $stmt->fetch();
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($data) {
-        $this->biographie = $data["biographie"];
-        $this->experience = $data["experience"];
-        $this->photo = $data["photo"];
-        $this->certification = $data["certification"];
-        return true;
+        $this->biographie   = $data["biographie"] ?? '';
+        $this->experience   = (int)($data["experience"] ?? 0);
+        $this->photo        = $data["photo"] ?? '';
+        $this->certification= $data["certification"] ?? '';
+    } else {
+        
+        $sql = "INSERT INTO coach_profile (user_id, biographie, experience, photo, certification) VALUES (?, '', 0, '', '')";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$this->id]);
+
+        
     }
 
-    return false;
+    return true;
 }
 
-    /** 
-     * Les Methodes de coach
-    */
-    // 
-    // 1- Creer / Modifier profile
-    
-    public function Profile(int $userid,string $biographie,int $experience,string $photo,string $certification){
 
-        // Vérifier si profil existe
+   
+
+  public function getBiographie() {
+    return $this->biographie ?? '';
+}
+
+public function getExperience() {
+    return $this->experience ?? 0;
+}
+
+public function getPhoto() {
+    return $this->photo ?? null;
+}
+
+public function getCertification() {
+    return $this->certification ?? '';
+}
+
+
+   
+       //CRÉER / MODIFIER PROFIL
+    
+
+    public function profile(
+        int $userId,
+        string $biographie,
+        int $experience,
+        string $photo,
+        string $certification
+    ): bool {
+
+        // Vérifier si le profil existe
         $check = $this->pdo->prepare(
             "SELECT id FROM coach_profile WHERE user_id = ?"
         );
         $check->execute([$userId]);
 
         if ($check->rowCount() > 0) {
-            // modifie
+            // Mise à jour
             $sql = "
                 UPDATE coach_profile
                 SET biographie = ?, experience = ?, photo = ?, certification = ?
                 WHERE user_id = ?
             ";
-           
             $stmt = $this->pdo->prepare($sql);
-
-            return $stmt->execute([$biographie,$experience,$photo,$certification,$userId]);
-        }else{
-            // creer Profile
+            return $stmt->execute([
+                $biographie,
+                $experience,
+                $photo,
+                $certification,
+                $userId
+            ]);
+        } else {
+            // Création
             $sql = "
                 INSERT INTO coach_profile
                 (biographie, experience, photo, certification, user_id)
                 VALUES (?, ?, ?, ?, ?)
             ";
             $stmt = $this->pdo->prepare($sql);
-
-            return $stmt->execute([$biographie,$experience,$photo,$certification,$userId]);
+            return $stmt->execute([
+                $biographie,
+                $experience,
+                $photo,
+                $certification,
+                $userId
+            ]);
         }
-        
     }
 
-    // 2- Ajouter Sports
-   
-    public function AjoutSport(int $coachId,array $sports){
-        // Nettoyer anciennes sports
+      // AJOUTER SPORTS
+
+    public function ajoutSport(int $coachId, array $sports): void
+    {
+        // Supprimer anciens sports
         $delete = $this->pdo->prepare(
-            "DELETE FROM coach_sports where coach_id=?"
+            "DELETE FROM coach_sports WHERE coach_id = ?"
         );
         $delete->execute([$coachId]);
 
-        // Ajouter Nouvelle Sports
-        $sql ="
-            insert into coach_sports(coach_id,sport_id) values (? , ?)
-        ";
-        $stmt =$this->pdo->prepare($sql);
+        // Ajouter nouveaux sports
+        $sql = "INSERT INTO coach_sports (coach_id, sport_id) VALUES (?, ?)";
+        $stmt = $this->pdo->prepare($sql);
 
-        foreach($sports as $sportId){
-            $stmt->execute([$coachId,$sportId]);
+        foreach ($sports as $sportId) {
+            $stmt->execute([$coachId, $sportId]);
         }
     }
 
-    // 3- Ajouter disponibilite de coach
+      // AJOUTER DISPONIBILITÉ
+public function ajoutDisponibilite(
+    int $coachId,
+    string $date,
+    string $heureDebut,
+    string $heureFin
+): bool {
+    $sql = "
+        INSERT INTO disponibilites
+        (coach_id, date, heure_debut, heure_fin, status)
+        VALUES (?, ?, ?, ?, 'libre')
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([
+        $coachId,
+        $date,
+        $heureDebut,
+        $heureFin
+    ]);
+}
+
     
-    public function AjoutDisponibilite(int $coachId,string $date,string $heureDebut,string $heureFin) {
+       //LISTER DISPONIBILITÉS
 
+    public function afficherDisponibilites(int $coachId): array
+    {
         $sql = "
-            insert into disponibilites (coach_id, date, heure_debut,heure_fin,statut)
-             values(? ,? ,? ,? ,'libre')
+            SELECT *
+            FROM disponibilites
+            WHERE coach_id = ?
+            ORDER BY date, heure_debut
         ";
-    
-        $stmt = $this->pdo-->prepare($sql);
-        
-        return $stmt->execute([$coachId,$date,$heureDebut,$heureFin]);
-    }
 
-    // 4- Lister Les disponibilites 
-
-    public function AfficherDisponibilite(int $coachId){
-
-        $sql = "
-            select * from disponibilites 
-            where coach_id = ? order by date, heure_debut
-        ";
-        $stmt = $this->pdo->prepere($sql);
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$coachId]);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 5 - Reservations 
+    
+      // RÉSERVATIONS
+    
 
-    public function AfficherReservations(int $coachId, string $status){
-
+    public function afficherReservations(int $coachId, string $status): array
+    {
         $sql = "
             SELECT r.*, u.nom, u.prenom, d.date, d.heure_debut, d.heure_fin
             FROM reservations r
@@ -136,79 +192,83 @@ class Coach extends Utilisateur{
             WHERE r.coach_id = ? AND r.status = ?
             ORDER BY d.date
         ";
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$coachId, $status]);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 6 - Accepter / Refuser 
+       //ACCEPTER / REFUSER
+   
+public function accepterRefuserReservation(int $reservationId, int $coachId, string $status): bool {
+    $sql = "
+        UPDATE reservations
+        SET status = ?
+        WHERE id = ? AND coach_id = ?
+    ";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([$status, $reservationId, $coachId]);
+}
 
-    public function AcceRefuseReservation(int $reservationId,int $coachId,string $status){
-        $sql = "
-            UPDATE reservations
-            SET status = ?
-            WHERE id = ? AND coach_id = ?
-        ";
+    //   DASHBOARD STATistiques
 
-        $stmt = $this->pdo->prepare($sql);
-
-        return $stmt->execute([$status,$reservationId,$coachId]);
-    }
-    // 7 - Statistiques de coach
-
-    public function getDashboardStats(int $coachId): array{
-
-        // 1- Demandes en attente
-
+    public function getDashboardStats(int $coachId): array
+    {
+        // En attente
         $pending = $this->pdo->prepare(
-            "SELECT COUNT(*) FROM reservations 
-            WHERE coach_id = ? AND status = 'en_attente'"
+            "SELECT COUNT(*) FROM reservations
+             WHERE coach_id = ? AND status = 'en_attente'"
         );
         $pending->execute([$coachId]);
 
-        // 2 - Séances aujourd’hui
-
+        // Aujourd'hui
         $today = $this->pdo->prepare(
-            " SELECT COUNT(*) FROM reservations r
-            JOIN disponibilites d ON r.availability_id = d.id
-            WHERE r.coach_id = ?
-            AND r.status = 'acceptee'
-            AND d.date = CURDATE()"
+            "SELECT COUNT(*) FROM reservations r
+             JOIN disponibilites d ON r.availability_id = d.id
+             WHERE r.coach_id = ?
+             AND r.status = 'acceptee'
+             AND d.date = CURDATE()"
         );
         $today->execute([$coachId]);
 
-        // 3- Séances demain
-
+        // Demain
         $tomorrow = $this->pdo->prepare(
-            " SELECT COUNT(*) FROM reservations r
-            JOIN disponibilites d ON r.availability_id = d.id
-            WHERE r.coach_id = ?
-            AND r.status = 'acceptee'
-            AND d.date = CURDATE() + INTERVAL 1 DAY
-            "
+            "SELECT COUNT(*) FROM reservations r
+             JOIN disponibilites d ON r.availability_id = d.id
+             WHERE r.coach_id = ?
+             AND r.status = 'acceptee'
+             AND d.date = CURDATE() + INTERVAL 1 DAY"
         );
         $tomorrow->execute([$coachId]);
 
-        // 4- Prochaine séance
+        // Prochaine séance
         $next = $this->pdo->prepare(
-            " SELECT u.nom, u.prenom, d.date, d.heure_debut, d.heure_fin
-            FROM reservations r
-            JOIN users u ON r.sportif_id = u.id
-            JOIN disponibilites d ON r.availability_id = d.id
-            WHERE r.coach_id = ? AND r.status = 'acceptee'AND d.date >= CURDATE()
-            ORDER BY d.date, d.heure_debut
-            LIMIT 1
-            ");
+            "SELECT u.nom, u.prenom, d.date, d.heure_debut, d.heure_fin
+             FROM reservations r
+             JOIN users u ON r.sportif_id = u.id
+             JOIN disponibilites d ON r.availability_id = d.id
+             WHERE r.coach_id = ?
+             AND r.status = 'acceptee'
+             AND d.date >= CURDATE()
+             ORDER BY d.date, d.heure_debut
+             LIMIT 1"
+        );
         $next->execute([$coachId]);
 
         return [
-            'pending' => $pending->fetchColumn(),
-            'today' => $today->fetchColumn(),
-            'tomorrow' => $tomorrow->fetchColumn(),
-            'next' => $next->fetch(PDO::FETCH_ASSOC)
+            'pending'  => (int)$pending->fetchColumn(),
+            'today'   => (int)$today->fetchColumn(),
+            'tomorrow'=> (int)$tomorrow->fetchColumn(),
+            'next'    => $next->fetch(PDO::FETCH_ASSOC)
         ];
     }
+    public function supprimerDisponibilite(int $dispoId, int $coachId): bool{
+        $sql = "DELETE FROM disponibilites WHERE id = ? AND coach_id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$dispoId, $coachId]);
+    }
+
+
 
 }
-?>
