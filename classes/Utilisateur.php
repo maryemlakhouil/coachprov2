@@ -2,9 +2,9 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-class Utilisateur{
+class Utilisateur {
 
-    protected int $id;
+    protected ?int $id = null;
     protected string $nom;
     protected string $prenom;
     protected string $email;
@@ -12,124 +12,104 @@ class Utilisateur{
     protected string $role;
     protected PDO $pdo;
 
-    // constructeur
-    public function __construct(?int $id=null){
-        $pdo=Database::getConnection();
-        if($id!==null){
+    // CONSTRUCTEUR
+    public function __construct(?int $id = null)
+    {
+        $this->pdo = Database::getConnection();
+
+        if ($id !== null) {
             $this->id = $id;
             $this->load();
         }
-        
     }
-    public  function load(int $id){
 
+    // Charger utilisateur depuis DB
+     protected  function load(): bool
+    {
         $sql = "SELECT * FROM users WHERE id = ?";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$this->id]);
 
-        $data = $stmt->fetch();
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if($data){
-            $this->nom=$data["nom"];
-            $this->prenom=$data["prenom"];
-            $this->email=$data["email"];
-            $this->password=$data["password"];
-            $this->role=$data["role"];
-
-
-            return true;
+        if (!$data) {
+            return false;
         }
-        return false;
 
+        $this->nom = $data['nom'];
+        $this->prenom = $data['prenom'];
+        $this->email = $data['email'];
+        $this->password = $data['password'];
+        $this->role = $data['role'];
 
-    }
-   
-    // getters
-
-    public function getId(){
-        return $this->id;
-    }
-
-    public function getNom(){
-        return $this->nom;
+        return true;
     }
 
-    public function getPrenom(){
-        return $this->prenom;
-    }
+    /* =====================
+       GETTERS
+    ===================== */
 
-    public function getEmail(){
-        return $this->email;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getNom(): string { return $this->nom; }
+    public function getPrenom(): string { return $this->prenom; }
+    public function getEmail(): string { return $this->email; }
+    public function getRole(): string { return $this->role; }
 
-    public function getRole(){
-        return $this->role;
-    }
+    /* =====================
+       REGISTER
+    ===================== */
 
-    // setters
+    public function register(string $nom,string $prenom,string $email,string $password,string $role): bool {
 
-    public function setNom($nom){
-        $this->nom=$nom;
-    }
+        if (!in_array($role, ['coach', 'sportif'])) {
+            return false;
+        }
 
-    public function setPrenom($prenom){
-        $this->prenom=$prenom;
-    }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
 
-    public function setEmail($email){
-        $this->email=$email;
-    }
+        $check = $this->pdo->prepare(
+            "SELECT id FROM users WHERE email = ?"
+        );
+        $check->execute([$email]);
 
-    public function setId($id){
-        $this->id=$id;
-    }
-
-    public function setRol($role){
-        $this->role=$role;
-    }
-
-    // Function Register
-    
-    public function register(string $nom,string $prenom,string $email,string $password,string $role){
-        // Vérifier email déjà existant
-        $check = $this->pdo->prepare("SELECT id From users where email=? ");
-        $check ->execute([$email]);
-        
         if ($check->rowCount() > 0) {
             return false;
         }
-        // hash du mot de passe 
 
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Insertion
-        $sql = " INSERT INTO users (nom, prenom, email, password, role)
+        $sql = "
+            INSERT INTO users (nom, prenom, email, password, role)
             VALUES (?, ?, ?, ?, ?)
         ";
-        $stmt = $this->pdo->prepare($sql);
 
+        $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$nom,$prenom,$email,$hashedPassword,$role]);
     }
-    // fonction de login  
 
-    public static function login(PDO $pdo,string $email, string $password){
+    /* =====================
+       LOGIN
+    ===================== */
 
-        $sql = "SELECT * FROM users WHERE email = ?";
-        $stmt = $pdo->prepare($sql);
+    public static function login(PDO $pdo, string $email, string $password)
+    {
+        $stmt = $pdo->prepare(
+            "SELECT * FROM users WHERE email = ?"
+        );
         $stmt->execute([$email]);
 
-        $user = $stmt->fetch();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user) {
             return false;
         }
 
         if (!password_verify($password, $user['password'])) {
-           return false;
+            return false;
         }
+
         return $user;
     }
-
 }
-
-?>

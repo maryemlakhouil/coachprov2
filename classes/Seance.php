@@ -13,6 +13,7 @@
         public function __construct(PDO $pdo){
              $this->pdo = $pdo;
         }
+ 
 
         /**
          * Les getters et Les setters 

@@ -1,18 +1,25 @@
+
 <?php
 session_start();
 require_once "../config/database.php";
 require_once "../classes/Coach.php";
 
-if ($_SESSION['role'] !== 'coach') {
-    header("Location: ../pages/login.php");
+// Vérification session et rôle
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'coach') {
+    header("Location: login.php");
     exit;
 }
 
-$coachId = $_SESSION['user_id'];
+// Vérifier la clé user id
+$coachId = $_SESSION['user']['id'];  
 $coach = new Coach($coachId);
 
 $stats = $coach->getDashboardStats($coachId);
+
+// S'assurer que les clés existent
+$stats = array_merge(['pending' => 0,'today' => 0,'tomorrow' => 0,'next' => null], $stats);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -27,13 +34,24 @@ $stats = $coach->getDashboardStats($coachId);
     <!-- Sidebar -->
     <aside class="w-64 bg-purple-700 text-white p-6">
         <h2 class="text-2xl font-bold mb-8">Coach Panel</h2>
-        <nav class="space-y-4">
-            <a href="dashboard_coach.php" class="block hover:text-gray-200">Dashboard</a>
-            <a href="profile.php" class="block hover:text-gray-200">Mon Profil</a>
-            <a href="seances.php" class="block hover:text-gray-200">Mes Séances</a>
-            <a href="reservations.php" class="block hover:text-gray-200">Réservations</a>
-            <a href="logout.php" class="block text-red-200">Déconnexion</a>
-        </nav>
+            <nav class="space-y-4">
+                <a href="../pages/dashbord_coach.php" class="block hover:text-gray-200">
+                    Dashboard
+                </a>
+
+                <a href="../pages/disponibilites.php" class="block hover:text-gray-200">
+                    Mes disponibilités
+                </a>
+
+                <a href="../pages/mes_reservations.php" class="block hover:text-gray-200">
+                    Réservations
+                </a>
+
+                <a href="../pages/logout.php" class="block text-red-300 hover:text-red-400">
+                    Déconnexion
+                </a>
+            </nav>
+
     </aside>
 
     <!-- Content -->

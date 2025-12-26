@@ -25,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sportifId = $_SESSION['user']['id'];
 
     if ($reservation->reserver($sportifId, $coachId, $seanceId)) {
-        $message = "Séance réservée avec succès ✅";
+        $message = "Séance réservée avec succès ";
     } else {
-        $message = "Impossible de réserver cette séance ❌";
+        $message = "Impossible de réserver cette séance ";
     }
 }
 
@@ -40,7 +40,7 @@ $seances = $seance->getSeancesDisponibles();
 <head>
     <meta charset="UTF-8">
     <title>Séances disponibles</title>
-    <link rel="stylesheet" href="../assets/style.css">
+   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
 

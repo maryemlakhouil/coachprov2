@@ -5,8 +5,9 @@ require_once __DIR__ . '/Utilisateur.php';
 
 class Sportif extends Utilisateur{
 
-    public function __construct(int $id,string $nom,string $prenom,string $email) {
-        parent::__construct($id, $nom, $prenom, $email, $password, 'sportif');
+    
+    public function __construct(int $id, string $nom = '', string $prenom = '', string $email = '') {
+    parent::__construct($id, $nom, $prenom, $email, null, 'sportif');
     }
 
     /**
@@ -38,7 +39,7 @@ class Sportif extends Utilisateur{
             order by date
         ";
         $stmt= $this->pdo->prepare($sql);
-        $stmt->excute([$coachId]);
+        $stmt->execute([$coachId]);
 
         return $stmt->fetchAll();
     }
@@ -140,7 +141,7 @@ class Sportif extends Utilisateur{
             "SELECT COUNT(*) FROM reservations
             WHERE sportif_id = ? AND status = 'acceptee'"
         );
-        served->execute([$sportifId]);
+        $reserved->execute([$sportifId]);
 
         // Demandes en attente
         $pending = $this->pdo->prepare(

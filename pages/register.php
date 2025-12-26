@@ -1,3 +1,33 @@
+<?php
+require_once '../config/database.php';
+require_once '../classes/Utilisateur.php';
+
+$error = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $nom = trim($_POST['nom'] ?? '');
+    $prenom = trim($_POST['prenom'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? '';
+
+    if (empty($nom) ||empty($prenom) ||empty($email) ||empty($password) ||empty($role)) {
+        $error = "Tous les champs sont obligatoires.";
+    } else {
+        $user = new Utilisateur();
+
+        $result = $user->register($nom,$prenom,$email,$password,$role);
+
+        if ($result) {
+            $success = "Inscription réussie. Vous pouvez vous connecter.";
+        } else {
+            $error = "Email déjà utilisé ou rôle invalide.";
+        }
+    }
+}
+?>
 
 <!DOCTYPE html>
 <html lang="fr">

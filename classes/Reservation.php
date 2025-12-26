@@ -77,9 +77,9 @@
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        /* ==========================
-        3. RÉSERVATIONS DU COACH
-        ========================== */
+        
+        // 3. RÉSERVATIONS DU COACH
+        
 
         public function getByCoach(
             int $coachId,
@@ -111,9 +111,9 @@
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        /* ==========================
-        4. ACCEPTER / REFUSER
-        ========================== */
+      
+        // 4. ACCEPTER / REFUSER
+        
 
         public function changerStatut(
             int $reservationId,
@@ -135,9 +135,9 @@
             ]);
         }
 
-        /* ==========================
-        5. ANNULER (SPORTIF)
-        ========================== */
+       
+       // 5. ANNULER (SPORTIF)
+        
 
         public function annuler(
             int $reservationId,

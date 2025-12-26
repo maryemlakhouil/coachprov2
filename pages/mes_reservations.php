@@ -45,11 +45,15 @@ $reservations = $reservation->getBySportif($_SESSION['user']['id']);
         Mes réservations
     </h1>
 
-    <?php if ($message): ?>
-        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">
-            <?= htmlspecialchars($message) ?>
-        </div>
-    <?php endif; ?>
+   <?php if ($message): ?>
+    <div class="mb-4 p-3 rounded
+        <?= str_contains($message, 'succès')
+            ? 'bg-green-100 text-green-700'
+            : 'bg-red-100 text-red-700' ?>">
+        <?= htmlspecialchars($message) ?>
+    </div>
+<?php endif; ?>
+
 
     <div class="overflow-x-auto bg-white shadow rounded-xl">
         <table class="w-full text-left border-collapse">

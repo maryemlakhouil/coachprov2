@@ -8,7 +8,7 @@ class Database{
 
     // Paramètres de connexion
     private const HOST = "localhost";
-    private const DB   = "coachpro";
+    private const DB   = "coachsport";
     private const USER = "root";
     private const PASS = "";
 

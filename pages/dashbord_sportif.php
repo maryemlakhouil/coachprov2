@@ -3,16 +3,22 @@ session_start();
 require_once "../config/database.php";
 require_once "../classes/Sportif.php";
 
-if ($_SESSION['role'] !== 'sportif') {
+// Vérifier session
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sportif') {
     header("Location: login.php");
     exit;
 }
 
+
 $sportifId = $_SESSION['user_id'];
-$sportif = new Sportif($sportifId, "", "", "");
-$stats = $sportif->getDashboardStats($sportifId);
+
+$sportif = new Sportif($sportifId);
+
+
+$stats = array_merge(['reserved'=>0,'pending'=>0], $sportif->getDashboardStats($sportifId));
 $coachs = $sportif->getCoachs();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -28,9 +34,9 @@ $coachs = $sportif->getCoachs();
 <aside class="w-64 bg-[#640D5F] text-white p-6">
     <h2 class="text-2xl font-bold mb-8">Sportif</h2>
     <nav class="space-y-4">
-        <a href="dashboard_sportif.php" class="block hover:text-gray-200">Dashboard</a>
-        <a href="mes_reservations.php" class="block hover:text-gray-200">Mes réservations</a>
-        <a href="logout.php" class="block text-red-300">Déconnexion</a>
+        <a href="../pages/dashboard_sportif.php" class="block hover:text-gray-200">Dashboard</a>
+        <a href="../pages/mes_reservations.php" class="block hover:text-gray-200">Mes réservations</a>
+        <a href="../pages/logout.php" class="block text-red-300">Déconnexion</a>
     </nav>
 </aside>
 

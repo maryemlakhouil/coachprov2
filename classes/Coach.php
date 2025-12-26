@@ -15,30 +15,28 @@ class Coach extends Utilisateur{
         $this->load($this->id);
        }
     // overried
-    public  function load(int $id) {
-        if(parent::load($id)){
-            
-            $sql = "SELECT * FROM coach_profiles WHERE user_id = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$this->id]);
-
-            $data = $stmt->fetch();
-
-            if($data){
-                $this->biographie=$data["biographie"];
-                $this->experience=$data["experience"];
-                $this->photo=$data["photo"];
-                $this->certification=$data["certification"];
-                return true;
-            }
-            return false;
-
-        };
-
-        $this->biographie = $biographie;
-        $this->experience = $experience;
-        $this->photo = $photo;
+   protected function load(): bool{
+    if (!parent::load()) {
+        return false;
     }
+
+    $sql = "SELECT * FROM coach_profile WHERE user_id = ?";
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$this->id]);
+
+    $data = $stmt->fetch();
+
+    if ($data) {
+        $this->biographie = $data["biographie"];
+        $this->experience = $data["experience"];
+        $this->photo = $data["photo"];
+        $this->certification = $data["certification"];
+        return true;
+    }
+
+    return false;
+}
+
     /** 
      * Les Methodes de coach
     */
