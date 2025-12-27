@@ -85,6 +85,10 @@ $seances = $seance->getSeancesDisponibles();
         <?php endif; ?>
     </div>
 </div>
+ <a href="../pages/dashbord_sportif.php" class="flex items-center gap-3 text-gray-400 px-4 py-3 rounded-xl transition-all">
+       
+    Retourner au dashbord 
+   </a>
 
 </body>
 </html>
