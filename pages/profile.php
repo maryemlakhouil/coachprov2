@@ -3,25 +3,17 @@ session_start();
 
 require_once __DIR__ . '/../classes/Coach.php';
 
-/* =====================
-   AUTH CHECK
-===================== */
+/* auth check */
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'coach') {
     header('Location: login.php');
     exit;
 }
 
-/* =====================
-   LOAD COACH
-===================== */
 $coachId = (int) $_SESSION['user_id'];
 $coach = new Coach($coachId);
 
 $message = '';
 
-/* =====================
-   HANDLE FORM SUBMIT
-===================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $biographie    = trim($_POST['biographie']);
     $experience    = (int) $_POST['experience'];

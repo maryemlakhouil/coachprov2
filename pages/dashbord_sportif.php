@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'sportif') {
     exit;
 }
 
-
 $sportifId = $_SESSION['user_id'];
 
 $sportif = new Sportif($sportifId);

@@ -263,11 +263,26 @@ public function accepterRefuserReservation(int $reservationId, int $coachId, str
             'next'    => $next->fetch(PDO::FETCH_ASSOC)
         ];
     }
+  
+
     public function supprimerDisponibilite(int $dispoId, int $coachId): bool{
+    
+        $check = $this->pdo->prepare(
+            "SELECT COUNT(*) 
+            FROM reservations 
+            WHERE availability_id = ?"
+        );
+        $check->execute([$dispoId]);
+
+        if ($check->fetchColumn() > 0) {
+            return false;
+        }
+
         $sql = "DELETE FROM disponibilites WHERE id = ? AND coach_id = ?";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$dispoId, $coachId]);
     }
+
 
 
 

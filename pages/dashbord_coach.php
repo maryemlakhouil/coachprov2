@@ -1,54 +1,51 @@
 
 <?php
-session_start();
-require_once "../config/database.php";
-require_once "../classes/Coach.php";
+    session_start();
+    require_once "../config/database.php";
+    require_once "../classes/Coach.php";
 
-// Vérification session et rôle
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'coach') {
-    header("Location: login.php");
-    exit;
+    // Vérification session et rôle
+    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'coach') {
+        header("Location: login.php");
+        exit;
+    }
+
+    // Vérifier la clé user id
+    $coachId = $_SESSION['user_id'];  
+    $coach = new Coach($coachId);
+    $coach = new Coach($coachId);
+
+    if (empty($coach->getBiographie()) ||$coach->getExperience() === 0) {
+        header('Location: completer_coach.php');
+        exit;
+    }
+
+    $stats = $coach->getDashboardStats($coachId);
+
+    // S'assurer que les clés existent
+    $stats = array_merge(['pending' => 0,'today' => 0,'tomorrow' => 0,'next' => null], $stats);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $coach->ajoutDisponibilite(
+            $coachId,
+            $_POST['date'],
+            $_POST['heure_debut'],
+            $_POST['heure_fin']
+        );
+    }
+
+    /* DELETE */
+   if (isset($_GET['delete_dispo'])) {
+
+    $dispoId = (int) $_GET['delete_dispo'];
+
+    if (!$coach->supprimerDisponibilite($dispoId, $coachId)) {
+        $error = " Impossible de supprimer : disponibilité déjà réservée.";
+    }
 }
 
-// Vérifier la clé user id
-$coachId = $_SESSION['user_id'];  
-$coach = new Coach($coachId);
-$coach = new Coach($coachId);
-
-if (empty($coach->getBiographie()) ||$coach->getExperience() === 0) {
-    header('Location: completer_coach.php');
-    exit;
-}
-
-
-
-$stats = $coach->getDashboardStats($coachId);
-
-// S'assurer que les clés existent
-$stats = array_merge(['pending' => 0,'today' => 0,'tomorrow' => 0,'next' => null], $stats);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $coach->ajoutDisponibilite(
-        $coachId,
-        $_POST['date'],
-        $_POST['heure_debut'],
-        $_POST['heure_fin']
-    );
-}
-
-/* DELETE */
-
-if (isset($_GET['delete_dispo'])) {
-    $coach->supprimerDisponibilite(
-        (int) $_GET['delete_dispo'],
-        $coachId
-    );
-}
-
-
-$dispos = $coach->afficherDisponibilites($coachId);
+    $dispos = $coach->afficherDisponibilites($coachId);
 ?>
-
 
 <!DOCTYPE html>
 <html lang="fr" class="dark">
