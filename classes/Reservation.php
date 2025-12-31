@@ -49,18 +49,9 @@
             return $success;
         }
 
-
-
-
-
-
-
-      
         //2. RÉSERVATIONS DU SPORTIF
        
-
-        public function getBySportif(int $sportifId): array
-        {
+        public function getBySportif(int $sportifId): array{
             $sql = "
                 SELECT r.*, d.date, d.heure_debut, d.heure_fin,
                     u.nom, u.prenom
@@ -77,14 +68,9 @@
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        
         // 3. RÉSERVATIONS DU COACH
         
-
-        public function getByCoach(
-            int $coachId,
-            string $status = null
-         ): array {
+        public function getByCoach(int $coachId,string $status = null): array {
             $sql = "
                 SELECT r.*, d.date, d.heure_debut, d.heure_fin,
                     u.nom, u.prenom
@@ -110,16 +96,10 @@
 
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
-
-      
+  
         // 4. ACCEPTER / REFUSER
         
-
-        public function changerStatut(
-            int $reservationId,
-            int $coachId,
-            string $status
-         ): bool {
+        public function changerStatut(int $reservationId,int $coachId,string $status): bool {
 
             $sql = "
                 UPDATE reservations
@@ -134,15 +114,10 @@
                 $coachId
             ]);
         }
-
        
        // 5. ANNULER (SPORTIF)
         
-
-        public function annuler(
-            int $reservationId,
-            int $sportifId
-         ): bool {
+        public function annuler(int $reservationId,int $sportifId): bool {
 
             // Récupérer la séance
             $stmt = $this->pdo->prepare("

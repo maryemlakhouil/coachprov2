@@ -21,64 +21,55 @@ class Coach extends Utilisateur
 
       // CHARGER PROFIL COACH
 
-  protected function load(): bool {
-    if (!parent::load()) {
-        return false;
-    }
+    protected function load(): bool {
+        if (!parent::load()) {
+            return false;
+        }
 
-    $sql = "SELECT * FROM coach_profile WHERE user_id = ?";
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->execute([$this->id]);
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($data) {
-        $this->biographie   = $data["biographie"] ?? '';
-        $this->experience   = (int)($data["experience"] ?? 0);
-        $this->photo        = $data["photo"] ?? '';
-        $this->certification= $data["certification"] ?? '';
-    } else {
-        
-        $sql = "INSERT INTO coach_profile (user_id, biographie, experience, photo, certification) VALUES (?, '', 0, '', '')";
+        $sql = "SELECT * FROM coach_profile WHERE user_id = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$this->id]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        
+        if ($data) {
+            $this->biographie   = $data["biographie"] ?? '';
+            $this->experience   = (int)($data["experience"] ?? 0);
+            $this->photo        = $data["photo"] ?? '';
+            $this->certification= $data["certification"] ?? '';
+        } else {
+            
+            $sql = "INSERT INTO coach_profile (user_id, biographie, experience, photo, certification) VALUES (?, '', 0, '', '')";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$this->id]);
+
+            
+        }
+
+        return true;
     }
 
-    return true;
-}
-
 
    
 
-  public function getBiographie() {
-    return $this->biographie ?? '';
-}
+    public function getBiographie() {
+        return $this->biographie ?? '';
+    }
 
-public function getExperience() {
-    return $this->experience ?? 0;
-}
+    public function getExperience() {
+        return $this->experience ?? 0;
+    }
 
-public function getPhoto() {
-    return $this->photo ?? null;
-}
+    public function getPhoto() {
+        return $this->photo ?? null;
+    }
 
-public function getCertification() {
-    return $this->certification ?? '';
-}
+    public function getCertification() {
+        return $this->certification ?? '';
+    }
 
-
-   
        //CRÉER / MODIFIER PROFIL
-    
 
-    public function profile(
-        int $userId,
-        string $biographie,
-        int $experience,
-        string $photo,
-        string $certification
-    ): bool {
+    public function profile(int $userId,string $biographie,int $experience,string $photo,string $certification): bool {
 
         // Vérifier si le profil existe
         $check = $this->pdo->prepare(
@@ -87,42 +78,29 @@ public function getCertification() {
         $check->execute([$userId]);
 
         if ($check->rowCount() > 0) {
-            // Mise à jour
+            // Mise a jour
             $sql = "
                 UPDATE coach_profile
                 SET biographie = ?, experience = ?, photo = ?, certification = ?
                 WHERE user_id = ?
             ";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([
-                $biographie,
-                $experience,
-                $photo,
-                $certification,
-                $userId
-            ]);
+            return $stmt->execute([$biographie,$experience,$photo,$certification,$userId]);
         } else {
-            // Création
+            // Creation
             $sql = "
                 INSERT INTO coach_profile
                 (biographie, experience, photo, certification, user_id)
                 VALUES (?, ?, ?, ?, ?)
             ";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute([
-                $biographie,
-                $experience,
-                $photo,
-                $certification,
-                $userId
-            ]);
+            return $stmt->execute([$biographie,$experience,$photo,$certification,$userId]);
         }
     }
 
       // AJOUTER SPORTS
 
-    public function ajoutSport(int $coachId, array $sports): void
-    {
+    public function ajoutSport(int $coachId, array $sports): void{
         // Supprimer anciens sports
         $delete = $this->pdo->prepare(
             "DELETE FROM coach_sports WHERE coach_id = ?"
@@ -139,32 +117,22 @@ public function getCertification() {
     }
 
       // AJOUTER DISPONIBILITÉ
-public function ajoutDisponibilite(
-    int $coachId,
-    string $date,
-    string $heureDebut,
-    string $heureFin
-): bool {
-    $sql = "
-        INSERT INTO disponibilites
-        (coach_id, date, heure_debut, heure_fin, status)
-        VALUES (?, ?, ?, ?, 'libre')
-    ";
 
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([
-        $coachId,
-        $date,
-        $heureDebut,
-        $heureFin
-    ]);
-}
+    public function ajoutDisponibilite(int $coachId,string $date,string $heureDebut,string $heureFin): bool {
+        $sql = "
+            INSERT INTO disponibilites
+            (coach_id, date, heure_debut, heure_fin, status)
+            VALUES (?, ?, ?, ?, 'libre')
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([ $coachId, $date,$heureDebut,$heureFin]);
+    }
 
     
        //LISTER DISPONIBILITÉS
 
-    public function afficherDisponibilites(int $coachId): array
-    {
+    public function afficherDisponibilites(int $coachId): array{
         $sql = "
             SELECT *
             FROM disponibilites
@@ -177,13 +145,10 @@ public function ajoutDisponibilite(
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     
       // RÉSERVATIONS
     
-
-    public function afficherReservations(int $coachId, string $status): array
-    {
+    public function afficherReservations(int $coachId, string $status): array{
         $sql = "
             SELECT r.*, u.nom, u.prenom, d.date, d.heure_debut, d.heure_fin
             FROM reservations r
@@ -201,20 +166,19 @@ public function ajoutDisponibilite(
 
        //ACCEPTER / REFUSER
    
-public function accepterRefuserReservation(int $reservationId, int $coachId, string $status): bool {
-    $sql = "
-        UPDATE reservations
-        SET status = ?
-        WHERE id = ? AND coach_id = ?
-    ";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([$status, $reservationId, $coachId]);
-}
+    public function accepterRefuserReservation(int $reservationId, int $coachId, string $status): bool {
+        $sql = "
+            UPDATE reservations
+            SET status = ?
+            WHERE id = ? AND coach_id = ?
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$status, $reservationId, $coachId]);
+    }
 
     //   DASHBOARD STATistiques
 
-    public function getDashboardStats(int $coachId): array
-    {
+    public function getDashboardStats(int $coachId): array{
         // En attente
         $pending = $this->pdo->prepare(
             "SELECT COUNT(*) FROM reservations
@@ -264,7 +228,6 @@ public function accepterRefuserReservation(int $reservationId, int $coachId, str
         ];
     }
   
-
     public function supprimerDisponibilite(int $dispoId, int $coachId): bool{
     
         $check = $this->pdo->prepare(
@@ -282,8 +245,5 @@ public function accepterRefuserReservation(int $reservationId, int $coachId, str
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$dispoId, $coachId]);
     }
-
-
-
 
 }

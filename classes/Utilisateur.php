@@ -85,13 +85,7 @@ class Utilisateur
       // INSCRIPTION
    
 
-    public function register(
-        string $nom,
-        string $prenom,
-        string $email,
-        string $password,
-        string $role
-    ): bool {
+    public function register(string $nom, $prenom,string $email,string $password,string $role): bool {
 
         // Rôle autorisé
         if (!in_array($role, ['coach', 'sportif'])) {
@@ -122,20 +116,13 @@ class Utilisateur
         ";
 
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([
-            $nom,
-            $prenom,
-            $email,
-            $hashedPassword,
-            $role
-        ]);
+        return $stmt->execute([$nom,$prenom,$email,$hashedPassword,$role]);
     }
 
        //CONNEXION
    
 
-    public static function login(PDO $pdo, string $email, string $password): array|false
-    {
+    public static function login(PDO $pdo, string $email, string $password): array|false{
         $stmt = $pdo->prepare(
             "SELECT * FROM users WHERE email = ?"
         );
